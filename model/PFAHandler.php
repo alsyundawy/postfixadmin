@@ -33,12 +33,12 @@ abstract class PFAHandler {
      * @var string (default) name of the database table
      * (can be overridden by $CONF[database_prefix] and $CONF[database_tables][*] via table_by_key())
      */
-    protected $db_table;
+    protected $db_table = '';
 
     /**
      * @var string field containing the ID
      */
-    protected $id_field;
+    protected $id_field = '';
 
     /**
      * @var string  field containing the label
@@ -52,7 +52,7 @@ abstract class PFAHandler {
      * defaults to $id_field if not set
      * @var string
      */
-    protected $order_by;
+    protected $order_by = '';
 
     /**
      * @var string
@@ -168,6 +168,12 @@ abstract class PFAHandler {
      */
     public function __construct($new = 0, $username = "", $is_admin = 1) {
         # set label_field if not explicitely set
+        if (!isset($this->id_field)) {
+            throw new \InvalidArgumentException("id_field must be defined");
+        }
+        if (!isset($this->db_table)) {
+            throw new \InvalidArgumentException("db_table must be defined");
+        }
         if (empty($this->label_field)) {
             $this->label_field = $this->id_field;
         }
@@ -209,6 +215,9 @@ abstract class PFAHandler {
 
         $this->initStruct();
 
+        /**
+         * @psalm-suppress InvalidArrayOffset
+         */
         if (!isset($this->struct['_can_edit'])) {
             $this->struct['_can_edit'] = pacol(0,           0,      1,      'vnum', ''                   , ''                  , '', array(),
                 /*not_in_db*/ 0,
@@ -217,6 +226,9 @@ abstract class PFAHandler {
                 );
         }
 
+        /**
+         * @psalm-suppress InvalidArrayOffset
+         */
         if (!isset($this->struct['_can_delete'])) {
             $this->struct['_can_delete'] = pacol(0,         0,      1,      'vnum', ''                   , ''                  , '', array(),
                 /*not_in_db*/ 0,
@@ -225,7 +237,10 @@ abstract class PFAHandler {
                 );
         }
 
-        $struct_hook = Config::read($this->db_table . '_struct_hook');
+        if (empty($this->db_table)) {
+            throw new Exception("db_table not defined");
+        }
+        $struct_hook = Config::read_string($this->db_table . '_struct_hook');
         if (!empty($struct_hook) && is_string($struct_hook) && $struct_hook != 'NO' && function_exists($struct_hook)) {
             $this->struct = $struct_hook($this->struct);
         }
@@ -715,10 +730,10 @@ abstract class PFAHandler {
      *
      * calls $this->read_from_db_postprocess() to postprocess the result
      *
-     * @param array or string condition -see build_select_query() for details
-     * @param array searchmode - see build_select_query() for details
-     * @param integer limit - maximum number of rows to return
-     * @param integer offset - number of first row to return
+     * @param array|string $condition -see build_select_query() for details
+     * @param array $searchmode - see build_select_query() for details
+     * @param int $limit - maximum number of rows to return
+     * @param int $offset - number of first row to return
      * @return array - rows (as associative array, with the ID as key)
      */
     protected function read_from_db($condition, $searchmode = array(), $limit=-1, $offset=-1) {
@@ -741,13 +756,14 @@ abstract class PFAHandler {
             $db_result[$row[$this->id_field]] = $row;
         }
 
-        $db_result = $this->read_from_db_postprocess($db_result);
-        return $db_result;
+        return $this->read_from_db_postprocess($db_result);
     }
 
     /**
      * allows to postprocess the database result
      * called by read_from_db()
+     * @param array $db_result
+     * @return array
      */
     protected function read_from_db_postprocess($db_result) {
         return $db_result;
@@ -803,15 +819,7 @@ abstract class PFAHandler {
             $real_condition = $condition;
         }
 
-        $result = $this->read_from_db($real_condition, $searchmode, $limit, $offset);
-
-        if (!is_array($result)) {
-            error_log('getList: read_from_db didn\'t return an array. table: ' . $this->db_table . ' - condition: $condition - limit: $limit - offset: $offset');
-            error_log('getList: This is most probably caused by read_from_db_postprocess()');
-            die('Unexpected error while reading from database! (Please check the error log for details, and open a bugreport)');
-        }
-
-        $this->result = $result;
+        $this->result = $this->read_from_db($real_condition, $searchmode, $limit, $offset);
         return true;
     }
 
