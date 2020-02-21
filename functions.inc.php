@@ -720,7 +720,7 @@ function encode_header($string, $default_charset = "utf-8") {
     $cur_l = $iOffset = 0;
 
     for ($i = 0; $i < $j; ++$i) {
-        switch ($string{$i}) {
+        switch ($string[$i]) {
             case '=':
             case '<':
             case '>':
@@ -739,7 +739,7 @@ function encode_header($string, $default_charset = "utf-8") {
                     $ret = '';
                     $iEncStart = false;
                 } else {
-                    $ret .= sprintf("=%02X", ord($string{$i}));
+                    $ret .= sprintf("=%02X", ord($string[$i]));
                 }
                 break;
             case '(':
@@ -769,7 +769,7 @@ function encode_header($string, $default_charset = "utf-8") {
                 }
                 break;
             default:
-                $k = ord($string{$i});
+                $k = ord($string[$i]);
                 if ($k > 126) {
                     if ($iEncStart === false) {
                         // do not start encoding in the middle of a string, also take the rest of the word.
@@ -803,7 +803,7 @@ function encode_header($string, $default_charset = "utf-8") {
                             $cur_l = 0;
                             $ret = '';
                         } else {
-                            $ret .= $string{$i};
+                            $ret .= $string[$i];
                         }
                     }
                 }
@@ -1721,6 +1721,7 @@ function db_query($sql, array $values = array(), $ignore_errors = false) {
     $link = db_connect();
     $error_text = '';
 
+    $stmt = null;
     try {
         $stmt = $link->prepare($sql);
         $stmt->execute($values);
@@ -2137,7 +2138,7 @@ function gen_show_status($show_alias) {
             $now = "datetime('now')";
         }
 
-        $stat_result = db_query_one("SELECT * FROM ". table_by_key('mailbox') ." WHERE username = ? AND password_expiry <= ? AND active = ?", array( $show_alias , $now , db_get_boolean(true) ));
+        $stat_result = db_query_one("SELECT * FROM ". table_by_key('mailbox') ." WHERE username = ? AND password_expiry <= $now AND active = ?", array( $show_alias , db_get_boolean(true) ));
 
         if (!empty($stat_result)) {
             $stat_string .= "<span style='background-color:" . $CONF['show_expired_color'] . "'>" . $CONF['show_status_text'] . "</span>&nbsp;";

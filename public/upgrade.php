@@ -248,7 +248,7 @@ function db_query_parsed($sql, $ignore_errors = 0, $attach_mysql = "") {
                 '{FULLTEXT}'        => 'FULLTEXT',
                 '{BOOLEAN}'         => "tinyint(1) NOT NULL DEFAULT '" . db_get_boolean(false) . "'",
                 '{UTF-8}'           => '/*!40100 CHARACTER SET utf8 */',
-                '{LATIN1}'          => '/*!40100 CHARACTER SET latin1 */',
+                '{LATIN1}'          => '/*!40100 CHARACTER SET latin1 COLLATE latin1_general_ci */',
                 '{IF_NOT_EXISTS}'   => 'IF NOT EXISTS',
                 '{RENAME_COLUMN}'   => 'CHANGE COLUMN',
                 '{MYISAM}'          => '',
@@ -259,6 +259,8 @@ function db_query_parsed($sql, $ignore_errors = 0, $attach_mysql = "") {
                 '{DATE}'            => "timestamp NOT NULL default '2000-01-01'", # MySQL needs a sane default (no default is interpreted as CURRENT_TIMESTAMP, which is ...
                 '{DATEFUTURE}'      => "timestamp NOT NULL default '2038-01-18'", # different default timestamp for vacation.activeuntil
                 '{DATECURRENT}'     => 'timestamp NOT NULL default CURRENT_TIMESTAMP', # only allowed once per table in MySQL
+                '{COLLATE}'         => "CHARACTER SET latin1 COLLATE latin1_general_ci", # just incase someone has a unicode collation set.
+
         );
         $sql = "$sql $attach_mysql";
     } elseif (db_sqlite()) {
@@ -281,6 +283,7 @@ function db_query_parsed($sql, $ignore_errors = 0, $attach_mysql = "") {
                 '{DATE}'            => "datetime NOT NULL default '2000-01-01'",
                 '{DATEFUTURE}'      => "datetime NOT NULL default '2038-01-18'", # different default timestamp for vacation.activeuntil
                 '{DATECURRENT}'     => 'datetime NOT NULL default CURRENT_TIMESTAMP',
+                '{COLLATE}'         => ''
         );
     } elseif ($CONF['database_type'] == 'pgsql') {
         $replace = array(
@@ -305,6 +308,7 @@ function db_query_parsed($sql, $ignore_errors = 0, $attach_mysql = "") {
                 '{DATE}'            => "timestamp with time zone default '2000-01-01'", # stay in sync with MySQL
                 '{DATEFUTURE}'      => "timestamp with time zone default '2038-01-18'", # stay in sync with MySQL
                 '{DATECURRENT}'     => 'timestamp with time zone default now()',
+                '{COLLATE}'         => '',
         );
     } else {
         echo_out("Sorry, unsupported database type " . $CONF['database_type']);
@@ -401,7 +405,7 @@ function upgrade_1_mysql() {
       `modified` {DATETIME},
       `active` tinyint(1) NOT NULL default '1',
       PRIMARY KEY  (`username`)
-  ) COMMENT='Postfix Admin - Virtual Admins';";
+  ) {COLLATE} COMMENT='Postfix Admin - Virtual Admins';";
 
     $sql[] = "
     CREATE TABLE {IF_NOT_EXISTS} $alias (
@@ -412,7 +416,7 @@ function upgrade_1_mysql() {
       `modified` {DATETIME},
       `active` tinyint(1) NOT NULL default '1',
       PRIMARY KEY  (`address`)
-    ) COMMENT='Postfix Admin - Virtual Aliases'; ";
+    ) {COLLATE} COMMENT='Postfix Admin - Virtual Aliases'; ";
 
     $sql[] = "
     CREATE TABLE {IF_NOT_EXISTS} $domain (
@@ -428,7 +432,7 @@ function upgrade_1_mysql() {
       `modified` {DATETIME},
       `active` tinyint(1) NOT NULL default '1',
       PRIMARY KEY  (`domain`)
-    ) COMMENT='Postfix Admin - Virtual Domains'; ";
+    ) {COLLATE} COMMENT='Postfix Admin - Virtual Domains'; ";
 
     $sql[] = "
     CREATE TABLE {IF_NOT_EXISTS} $domain_admins (
@@ -437,7 +441,7 @@ function upgrade_1_mysql() {
       `created` {DATETIME},
       `active` tinyint(1) NOT NULL default '1',
       KEY username (`username`)
-    ) COMMENT='Postfix Admin - Domain Admins';";
+    ) {COLLATE} COMMENT='Postfix Admin - Domain Admins';";
 
     $sql[] = "
     CREATE TABLE {IF_NOT_EXISTS} $log (
@@ -447,7 +451,7 @@ function upgrade_1_mysql() {
       `action` varchar(255) NOT NULL default '',
       `data` varchar(255) NOT NULL default '',
       KEY timestamp (`timestamp`)
-    ) COMMENT='Postfix Admin - Log';";
+    ) {COLLATE} COMMENT='Postfix Admin - Log';";
 
     $sql[] = "
     CREATE TABLE {IF_NOT_EXISTS} $mailbox (
@@ -461,7 +465,7 @@ function upgrade_1_mysql() {
       `modified` {DATETIME},
       `active` tinyint(1) NOT NULL default '1',
       PRIMARY KEY  (`username`)
-    ) COMMENT='Postfix Admin - Virtual Mailboxes';";
+    ) {COLLATE} COMMENT='Postfix Admin - Virtual Mailboxes';";
 
     $sql[] = "
     CREATE TABLE {IF_NOT_EXISTS} $vacation ( 
@@ -474,7 +478,7 @@ function upgrade_1_mysql() {
         active tinyint(4) NOT NULL default '1', 
         PRIMARY KEY (email), 
         KEY email (email) 
-    ) {INNODB} DEFAULT CHARSET=latin1 COMMENT='Postfix Admin - Virtual Vacation' ;";
+    ) {INNODB} {COLLATE} COMMENT='Postfix Admin - Virtual Vacation' ;";
 
     foreach ($sql as $query) {
         db_query_parsed($query);
@@ -702,7 +706,10 @@ function upgrade_3_mysql() {
  */
 function upgrade_4_mysql() { # MySQL only
     # changes between 2.1 and moving to sourceforge
+
+    return; // as the above _mysql functions are disabled; this one will just error for a new db.
     $table_domain = table_by_key('domain');
+
     db_query_parsed("ALTER TABLE $table_domain ADD COLUMN quota int(10) NOT NULL default '0' AFTER maxquota", true);
     # Possible errors that can be ignored:
     # - Invalid query: Table 'postfix.domain' doesn't exist
@@ -814,7 +821,7 @@ function upgrade_5_mysql() {
             `active` tinyint(1) NOT NULL default '1',
             PRIMARY KEY  (`username`),
     KEY username (`username`)
-) DEFAULT {LATIN1} COMMENT='Postfix Admin - Virtual Admins'; ");
+) {COLLATE} COMMENT='Postfix Admin - Virtual Admins'; ");
 
     db_query_parsed("
         CREATE TABLE {IF_NOT_EXISTS} " . table_by_key('alias') . " (
@@ -826,7 +833,7 @@ function upgrade_5_mysql() {
             `active` tinyint(1) NOT NULL default '1',
             PRIMARY KEY  (`address`),
     KEY address (`address`)
-            ) DEFAULT {LATIN1} COMMENT='Postfix Admin - Virtual Aliases';
+            ) {COLLATE} COMMENT='Postfix Admin - Virtual Aliases';
     ");
 
     db_query_parsed("
@@ -844,7 +851,7 @@ function upgrade_5_mysql() {
             `active` tinyint(1) NOT NULL default '1',
             PRIMARY KEY  (`domain`),
     KEY domain (`domain`)
-            ) DEFAULT {LATIN1} COMMENT='Postfix Admin - Virtual Domains';
+            ) {COLLATE} COMMENT='Postfix Admin - Virtual Domains';
     ");
 
     db_query_parsed("
@@ -854,7 +861,7 @@ function upgrade_5_mysql() {
             `created` {DATETIME},
             `active` tinyint(1) NOT NULL default '1',
             KEY username (`username`)
-        ) DEFAULT {LATIN1} COMMENT='Postfix Admin - Domain Admins';
+        ) {COLLATE} COMMENT='Postfix Admin - Domain Admins';
     ");
 
     db_query_parsed("
@@ -865,7 +872,7 @@ function upgrade_5_mysql() {
             `action` varchar(255) NOT NULL default '',
             `data` varchar(255) NOT NULL default '',
             KEY timestamp (`timestamp`)
-        ) DEFAULT {LATIN1} COMMENT='Postfix Admin - Log';
+        ) {COLLATE} COMMENT='Postfix Admin - Log';
     ");
 
     db_query_parsed("
@@ -880,8 +887,8 @@ function upgrade_5_mysql() {
             `modified` {DATETIME},
             `active` tinyint(1) NOT NULL default '1',
             PRIMARY KEY  (`username`),
-    KEY username (`username`)
-            ) DEFAULT {LATIN1} COMMENT='Postfix Admin - Virtual Mailboxes';
+            KEY username (`username`)
+            ) {COLLATE} COMMENT='Postfix Admin - Virtual Mailboxes';
     ");
 
     db_query_parsed("
@@ -895,7 +902,7 @@ function upgrade_5_mysql() {
             `active` tinyint(1) NOT NULL default '1',
             PRIMARY KEY  (`email`),
     KEY email (`email`)
-            ) DEFAULT {LATIN1} COMMENT='Postfix Admin - Virtual Vacation';
+            ) {COLLATE} COMMENT='Postfix Admin - Virtual Vacation';
     ");
 }
 
@@ -924,7 +931,7 @@ function upgrade_81_mysql() { # MySQL only
         ALTER TABLE $table_vacation CHANGE `cache`    `cache`   TEXT           {LATIN1} NOT NULL
         ALTER TABLE $table_vacation CHANGE `domain`   `domain`  VARCHAR( 255 ) {LATIN1} NOT NULL
         ALTER TABLE $table_vacation CHANGE `active`   `active`  TINYINT( 1 )            NOT NULL DEFAULT '1'
-        ALTER TABLE $table_vacation DEFAULT  {LATIN1}
+        ALTER TABLE $table_vacation DEFAULT  {COLLATE}
         ALTER TABLE $table_vacation {INNODB}
     "));
 
@@ -974,9 +981,7 @@ function upgrade_318_mysql() {
             PRIMARY KEY on_vacation (`on_vacation`, `notified`),
         CONSTRAINT `vacation_notification_pkey` 
         FOREIGN KEY (`on_vacation`) REFERENCES $table_vacation(`email`) ON DELETE CASCADE
-    )
-    DEFAULT {LATIN1}
-    COMMENT='Postfix Admin - Virtual Vacation Notifications'
+    ) {INNODB} {COLLATE} COMMENT='Postfix Admin - Virtual Vacation Notifications'
     ");
 
     # in case someone has manually created the table with utf8 fields before:
@@ -1083,7 +1088,7 @@ function upgrade_438_mysql() {
             PRIMARY KEY  (`alias_domain`),
             KEY `active` (`active`),
             KEY `target_domain` (`target_domain`)
-        ) COMMENT='Postfix Admin - Domain Aliases'
+        ) {COLLATE} COMMENT='Postfix Admin - Domain Aliases'
     ");
 }
 
@@ -1361,7 +1366,7 @@ function upgrade_729_mysql_pgsql() {
         path     VARCHAR(100) {LATIN1} NOT NULL,
         current  {BIGINT},
         PRIMARY KEY (username, path)
-    ) ; 
+    ) {COLLATE}  ; 
     ");
 
     # table for dovecot >= 1.2
