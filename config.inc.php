@@ -103,13 +103,14 @@ $CONF['database_user'] = 'postfix';
 $CONF['database_password'] = 'postfixadmin';
 $CONF['database_name'] = 'postfix';
 
-// Database SSL Config (MySQLi only)
+// Database SSL Config (PDO/MySQLi only)
 $CONF['database_use_ssl'] = false;
 $CONF['database_ssl_key'] = NULL;
 $CONF['database_ssl_cert'] = NULL;
 $CONF['database_ssl_ca'] = NULL;
 $CONF['database_ssl_ca_path'] = NULL;
 $CONF['database_ssl_cipher'] = NULL;
+$CONF['database_ssl_verify_server_cert'] = true;
 
 // If you need to specify a different port for a MYSQL database connection, use e.g.
 //   $CONF['database_host'] = '172.30.33.66:3308';
