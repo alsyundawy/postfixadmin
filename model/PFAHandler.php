@@ -418,7 +418,7 @@ abstract class PFAHandler {
      * @return bool - true if all values are valid, otherwise false
      * error messages (if any) are stored in $this->errormsg
      */
-    public function set($values) {
+    public function set(array $values) {
         if (!$this->can_edit) {
             $this->errormsg[] = Config::Lang_f('edit_not_allowed', $this->label);
             return false;
@@ -521,7 +521,7 @@ abstract class PFAHandler {
      * can be used to update additional columns etc.
      * hint: modify $this->values and $this->errormsg directly as needed
      */
-    protected function setmore($values) {
+    protected function setmore(array $values) {
         # do nothing
     }
 
@@ -840,11 +840,11 @@ abstract class PFAHandler {
 
             $crypt_password = pacrypt($password, $row['password']);
 
-            if ($row['password'] == $crypt_password) {
-                return true;
-            }
+            return hash_equals($row['password'], $crypt_password);
         }
-        return false;
+        // try and be near constant time regardless of whether the db user exists or not
+        $x = pacrypt('abc', 'def');
+        return hash_equals('not', 'comparable');
     }
 
     /**
