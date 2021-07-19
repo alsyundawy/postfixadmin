@@ -128,6 +128,7 @@ $PALANG['alias_updated'] = 'Aliasul %s a fost modificat!';
 $PALANG['pCreate_alias_catchall_text'] = 'Puteti crea un alias pentru adrese multiple prin folosirea "*".'; # XXX don't propagate usage of *@target-domain.com for domain-aliasing any longer
 $PALANG['mailbox_alias_cant_be_deleted'] = 'Acest alias apartine unei casute si nu poate fi sters!';
 $PALANG['protected_alias_cant_be_deleted'] = 'The alias %s is protected and can only be deleted by a superadmin'; # XXX
+$PALANG['alias_points_to_itself'] = 'Alias may not point to itself'; # XXX
 
 $PALANG['pEdit_alias_welcome'] = 'Editeaza setarile de redirectionare';
 $PALANG['pEdit_alias_help'] = 'Se accepta inregistrari multiple, cate una pe linie.';
@@ -202,6 +203,7 @@ $PALANG['reply_once_per_day'] = 'Raspunde odata pe zi';
 $PALANG['reply_once_per_week'] = 'Raspunde odata pe saptamana';
 
 $PALANG['pViewlog_welcome'] = 'Vizualizati ultimele %s operatii pentru ';
+$PALANG['pViewlog_welcome_all'] = 'View the last %s actions '; # XXX
 $PALANG['pViewlog_timestamp'] = 'Data si ora';
 $PALANG['pViewlog_action'] = 'Operatie';
 $PALANG['pViewlog_data'] = 'Detalii';
@@ -272,10 +274,12 @@ $PALANG['domain_updated'] = 'Domeniul %s a fost actualizat.';
 
 $PALANG['pAdminDelete_admin_error'] = 'Nu pot sterge administratorul!';
 $PALANG['domain_postdel_failed'] = 'Scripturile poststergere ale domeniului au esuat, verificati logurile pentru detalii!';
+$PALANG['domain_postedit_failed'] = 'The domain postedit script failed, check the error log for details!'; # XXX
 $PALANG['domain_postcreate_failed'] = 'Scripturile postcreare ale domeniului au esuat, verificati logurile pentru detalii!';
 $PALANG['mailbox_postdel_failed'] = 'Scripturile poststergere ale casutei de email au esuat, verificati logurile pentru detalii!';
 $PALANG['mailbox_postedit_failed'] = 'Scripturile posteditare ale casutei de mail au esuat, verificati logurile pentru detalii!';
 $PALANG['mailbox_postcreate_failed'] = 'Scripturile postcreare ale casutei de email au esuat, verificati logurile pentru detalii!';
+$PALANG['mailbox_postpassword_failed'] = 'The mailbox postpassword script failed, check the error log for details!'; # XXX
 $PALANG['pAdminDelete_alias_domain_error'] = 'Nu pot sterge domeniul alias!';
 $PALANG['domain_conflict_vacation_domain'] = 'Nu puteti folosi domeniul vacanta ca domeniu de mail!';
 

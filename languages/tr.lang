@@ -126,6 +126,7 @@ $PALANG['alias_updated'] = '%s aliasınız güncellendi!';
 $PALANG['pCreate_alias_catchall_text'] = 'Tümünü-yakala oluşturmak için alias olarak "*" kullanın. Domain yönlendirme domaini için kime kısmında "*@domain.tld" kullanın.'; # XXX check/beautify - was split in two lines before
 $PALANG['mailbox_alias_cant_be_deleted'] = 'Bu alias, sistemde kayıtlı bir e-posta hesabına ait ve silinemez!';
 $PALANG['protected_alias_cant_be_deleted'] = '%s isimli alias korumalı olarak ayarlı ve ancak bir süper yönetici tarafından silinebilir';
+$PALANG['alias_points_to_itself'] = 'Alias may not point to itself'; # XXX
 
 $PALANG['pEdit_alias_welcome'] = 'Yönlendirme ayarlarını düzenleyin. '; # XXX Text change to: 'Edit forwarding settings'
 $PALANG['pEdit_alias_help'] = 'Her bir satıra bir giriş şeklinde, çoklu hedefler kabul edilir.'; # XXX # XXX Text change to: 'Accepts multiple targets, one entry per line.'
@@ -198,6 +199,7 @@ $PALANG['reply_once_per_day'] = 'Günde bir kez yanıtla';
 $PALANG['reply_once_per_week'] = 'Haftada bir kez yanıtla';
 
 $PALANG['pViewlog_welcome'] = 'Son %s hareketi:';
+$PALANG['pViewlog_welcome_all'] = 'View the last %s actions '; # XXX
 $PALANG['pViewlog_timestamp'] = 'Timestamp'; # XXX
 $PALANG['pViewlog_action'] = 'Hareket';
 $PALANG['pViewlog_data'] = 'Veri';
@@ -266,10 +268,12 @@ $PALANG['pAdminCreate_domain_result_success'] = 'Domain eklendi! (%s)'; # XXX Te
 $PALANG['domain_updated'] = 'Domain güncelleştirildi: %s';
 $PALANG['pAdminDelete_admin_error'] = 'Yönetici silinemedi!';
 $PALANG['domain_postdel_failed'] = 'Bu domaine ait silme-sonrası skript çalıştırılamadı, lütfen detaylar için kayıtları, logları inceleyin!';
+$PALANG['domain_postedit_failed'] = 'The domain postedit script failed, check the error log for details!'; # XXX
 $PALANG['domain_postcreate_failed'] = 'Bu domaine ait oluşturma-sonrası skript çalıştırılamadı, lütfen detaylar için kayıtları, logları inceleyin!';
 $PALANG['mailbox_postdel_failed'] = 'E-posta hesabı silme-sonrası skript çalıştırılamadı, lütfen detaylar için kayıtları, logları inceleyin!';
 $PALANG['mailbox_postedit_failed'] = 'E-posta düzenleme-sonrası skript çalıştırılamadı, lütfen detaylar için kayıtları, logları inceleyin!';
 $PALANG['mailbox_postcreate_failed'] = 'E-posta oluşturma-sonrası skript çalıştırılamadı, lütfen detaylar için kayıtları, logları inceleyin!';
+$PALANG['mailbox_postpassword_failed'] = 'The mailbox postpassword script failed, check the error log for details!'; # XXX
 $PALANG['pAdminDelete_alias_domain_error'] = 'Domain aliasları silinemedi!';
 $PALANG['domain_conflict_vacation_domain'] = 'Tatil domain adresini e-posta domaini olarak kullanamazsınız!';
 

@@ -124,6 +124,7 @@ $PALANG['alias_updated'] = 'The alias %s has been updated!'; # XXX
 $PALANG['pCreate_alias_catchall_text'] = 'Alias orokor bat sortzeko "*" erabil ezazu alias gisa. Domeinuz domeinurako birbideraketa baterako Norako gisa "*@domain.tld" erabil ezazu.'; # XXX check/beautify - was split in two lines before
 $PALANG['mailbox_alias_cant_be_deleted'] = 'This alias belongs to a mailbox and can\'t be deleted!'; # XXX
 $PALANG['protected_alias_cant_be_deleted'] = 'The alias %s is protected and can only be deleted by a superadmin'; # XXX
+$PALANG['alias_points_to_itself'] = 'Alias may not point to itself'; # XXX
 
 $PALANG['pEdit_alias_welcome'] = 'Domeinuarentzat aliasa aldatu.'; # XXX Text change to: 'Edit forwarding settings'
 $PALANG['pEdit_alias_help'] = 'Lerroko sarrera bat.'; # XXX # XXX Text change to: 'Accepts multiple targets, one entry per line.'
@@ -196,6 +197,7 @@ $PALANG['reply_once_per_day'] = 'Reply once a day'; # XXX
 $PALANG['reply_once_per_week'] = 'Reply once per week'; # XXX
 
 $PALANG['pViewlog_welcome'] = 'Honen azken %s ekintzak ikusi ';
+$PALANG['pViewlog_welcome_all'] = 'View the last %s actions '; # XXX
 $PALANG['pViewlog_timestamp'] = 'Data/ordua';
 $PALANG['pViewlog_action'] = 'Ekintza';
 $PALANG['pViewlog_data'] = 'Datuak';
@@ -264,10 +266,12 @@ $PALANG['pAdminCreate_domain_result_success'] = 'Domeinua gehituta! (%s)'; # XXX
 $PALANG['domain_updated'] = 'The domain %s has been updated.'; # XXX
 $PALANG['pAdminDelete_admin_error'] = 'Unable to delete admin!'; # XXX
 $PALANG['domain_postdel_failed'] = 'The domain postdeletion script failed, check the error log for details!'; # XXX
+$PALANG['domain_postedit_failed'] = 'The domain postedit script failed, check the error log for details!'; # XXX
 $PALANG['domain_postcreate_failed'] = 'The domain postcreate script failed, check the error log for details!'; # XXX
 $PALANG['mailbox_postdel_failed'] = 'The mailbox postdeletion script failed, check the error log for details!'; # XXX
 $PALANG['mailbox_postedit_failed'] = 'The mailbox postedit script failed, check the error log for details!'; # XXX
 $PALANG['mailbox_postcreate_failed'] = 'The mailbox postcreate script failed, check the error log for details!'; # XXX
+$PALANG['mailbox_postpassword_failed'] = 'The mailbox postpassword script failed, check the error log for details!'; # XXX
 $PALANG['pAdminDelete_alias_domain_error'] = 'Unable to remove domain alias!'; # XXX
 $PALANG['domain_conflict_vacation_domain'] = 'You can\'t use the vacation domain as mail domain!'; # XXX
 

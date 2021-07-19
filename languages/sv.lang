@@ -129,6 +129,7 @@ $PALANG['alias_updated'] = 'Aliaset %s är uppdaterat!';
 $PALANG['pCreate_alias_catchall_text'] = 'För att skapa en catch-all anges ett "*" som alias.';
 $PALANG['mailbox_alias_cant_be_deleted'] = 'Detta alias tillhör en brevlåda och kan inte tas bort!';
 $PALANG['protected_alias_cant_be_deleted'] = 'The alias %s is protected and can only be deleted by a superadmin'; # XXX
+$PALANG['alias_points_to_itself'] = 'Alias may not point to itself'; # XXX
 
 $PALANG['pEdit_alias_welcome'] = 'Inställningar för vidarebefordring.'; # XXX Text change to: 'Edit forwarding settings'
 $PALANG['pEdit_alias_help'] = 'Ett alias per rad.'; # XXX Text change to: 'Accepts multiple targets, one entry per line.'
@@ -203,6 +204,7 @@ $PALANG['reply_once_per_day'] = 'Svara en gång om dagen';
 $PALANG['reply_once_per_week'] = 'Svara en gång i veckan';
 
 $PALANG['pViewlog_welcome'] = 'Visa de senaste %s åtgärderna för ';
+$PALANG['pViewlog_welcome_all'] = 'Visa de senaste %s åtgärderna ';
 $PALANG['pViewlog_timestamp'] = 'Tidpunkt';
 $PALANG['pViewlog_action'] = 'Åtgärd';
 $PALANG['pViewlog_data'] = 'Data';
@@ -273,10 +275,12 @@ $PALANG['domain_updated'] = 'Domänen %s har uppdaterats.';
 
 $PALANG['pAdminDelete_admin_error'] = 'Misslyckades att ta bort administratören!';
 $PALANG['domain_postdel_failed'] = 'Misslyckades att ta bort domänen!'; # XXX Text changed to: The domain postdeletion script failed, check the error log for details!
+$PALANG['domain_postedit_failed'] = 'The domain postedit script failed, check the error log for details!'; # XXX
 $PALANG['domain_postcreate_failed'] = 'Domänens postcreate-skript misslyckades. Titta i felloggen för detaljer!';
 $PALANG['mailbox_postdel_failed'] = 'Brevlådans postdeletion-skript misslyckades. Titta i felloggen för detaljer!';
 $PALANG['mailbox_postedit_failed'] = 'Brevlådans postedit-skript misslyckades. Titta i felloggen för detaljer!';
 $PALANG['mailbox_postcreate_failed'] = 'Brevlådans postcreate-skript misslyckades. Titta i felloggen för detaljer!';
+$PALANG['mailbox_postpassword_failed'] = 'The mailbox postpassword script failed, check the error log for details!'; # XXX
 $PALANG['pAdminDelete_alias_domain_error'] = 'Misslyckades att ta bort domänalias!';
 $PALANG['domain_conflict_vacation_domain'] = 'Du kan inte använda ledighetsdomänen som e-postdomän!';
 

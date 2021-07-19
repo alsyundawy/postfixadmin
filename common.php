@@ -15,10 +15,10 @@
  * environment and ensures other functions are loaded.
  */
 
-if (!defined('POSTFIXADMIN')) { # already defined if called from setup.php
-    define('POSTFIXADMIN', 1); # checked in included files
+if (!defined('POSTFIXADMIN')) {
+    define('POSTFIXADMIN', 1);
 
-    if (!defined('POSTFIXADMIN_CLI')) {
+    if (!defined('POSTFIXADMIN_CLI')) { // postfixadmin-cli
         // this is the default; see also https://sourceforge.net/p/postfixadmin/bugs/347/
         session_cache_limiter('nocache');
         session_name('postfixadmin_session');
@@ -36,7 +36,8 @@ $incpath = dirname(__FILE__);
  * @param string $class
  * __autoload implementation, for use with spl_autoload_register().
  */
-function postfixadmin_autoload($class) {
+function postfixadmin_autoload($class)
+{
     $PATH = dirname(__FILE__) . '/model/' . $class . '.php';
 
     if (is_file($PATH)) {
@@ -45,6 +46,7 @@ function postfixadmin_autoload($class) {
     }
     return false;
 }
+
 spl_autoload_register('postfixadmin_autoload');
 
 if (!is_file("$incpath/config.inc.php")) {
@@ -52,7 +54,6 @@ if (!is_file("$incpath/config.inc.php")) {
 }
 
 global $CONF;
-
 
 require_once("$incpath/config.inc.php");
 
@@ -63,14 +64,12 @@ if (isset($CONF['configured']) && !defined('PHPUNIT_TEST')) {
     }
 }
 
-Config::write($CONF);
+Config::getInstance()->setAll($CONF);
 
 $PALANG = [];
+
 require_once("$incpath/languages/language.php");
 require_once("$incpath/functions.inc.php");
-if (extension_loaded('Phar') && ( version_compare(PHP_VERSION, '7.0.0') < 0)) {
-    require_once("$incpath/lib/random_compat.phar");
-}
 
 if (defined('POSTFIXADMIN_CLI')) {
     $language = 'en'; # TODO: make configurable or autodetect from locale settings
@@ -89,13 +88,12 @@ if (!empty($CONF['language_hook']) && function_exists($CONF['language_hook'])) {
 
 Config::write('__LANG', $PALANG);
 
-unset($incpath);
-
 if (!defined('POSTFIXADMIN_CLI')) {
-    if (!is_file(dirname(__FILE__) . "/lib/smarty.inc.php")) {
-        die("smarty.inc.php is missing! Something is wrong...");
+    if (!isset($PALANG)) {
+        die("environment not setup correctly");
     }
-    require_once(dirname(__FILE__) . "/lib/smarty.inc.php");
+    require_once(__DIR__  . '/lib/smarty/libs/Autoloader.php');
+    Smarty_Autoloader::register();
 }
 
 /* vim: set expandtab softtabstop=4 tabstop=4 shiftwidth=4: */

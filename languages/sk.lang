@@ -127,6 +127,7 @@ $PALANG['alias_updated'] = 'Alias %s bol aktualizovaný.';
 $PALANG['pCreate_alias_catchall_text'] = 'Pre vytvorenie doménového koša použite * ako alias. Pre alias doména-doména použite *@domain.tld ako cieľ.';
 $PALANG['mailbox_alias_cant_be_deleted'] = 'Tento alias patrí k schránke a nemôže byť zmazaný!';
 $PALANG['protected_alias_cant_be_deleted'] = 'Alias %s je chránený a môže ho zmazať len superadmin';
+$PALANG['alias_points_to_itself'] = 'Alias may not point to itself'; # XXX
 
 $PALANG['pEdit_alias_welcome'] = 'Upraviť alias';
 $PALANG['pEdit_alias_help'] = 'Jeden záznam na riadok.';
@@ -199,6 +200,7 @@ $PALANG['reply_once_per_day'] = 'Odpovedať raz za deň';
 $PALANG['reply_once_per_week'] = 'Odpovedať raz za týždeň';
 
 $PALANG['pViewlog_welcome'] = 'Prehľad %s posledných akcií pre ';
+$PALANG['pViewlog_welcome_all'] = 'Prehľad %s posledných akcií ';
 $PALANG['pViewlog_timestamp'] = 'Časová značka';
 $PALANG['pViewlog_action'] = 'Akcia';
 $PALANG['pViewlog_data'] = 'Podrobnosti';
@@ -267,10 +269,12 @@ $PALANG['pAdminCreate_domain_result_success'] = 'Doména %s bola pridaná.';
 $PALANG['domain_updated'] = 'Doména %s bola zmenená.';
 $PALANG['pAdminDelete_admin_error'] = 'Nepodarilo sa zmazať administrátora!';
 $PALANG['domain_postdel_failed'] = 'Skript postdeletion pre doménu zlyhal, preverte log!';
+$PALANG['domain_postedit_failed'] = 'The domain postedit script failed, check the error log for details!'; # XXX
 $PALANG['domain_postcreate_failed'] = 'Skript postcreate pre doménu zlyhal, preverte log!';
 $PALANG['mailbox_postdel_failed'] = 'Skript postdeletion pre schránku zlyhal, preverte log!';
 $PALANG['mailbox_postedit_failed'] = 'Skript postedit pre schránku zlyhal, preverte log!';
 $PALANG['mailbox_postcreate_failed'] = 'Skript postcreate pre schránku zlyhal, preverte log!';
+$PALANG['mailbox_postpassword_failed'] = 'The mailbox postpassword script failed, check the error log for details!'; # XXX
 $PALANG['pAdminDelete_alias_domain_error'] = 'Nepodario sa odstrániť alias domény!';
 $PALANG['domain_conflict_vacation_domain'] = 'Nemôžete použiť doménu automatickej odpovede pre poštu!';
 

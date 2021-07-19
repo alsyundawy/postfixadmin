@@ -53,16 +53,21 @@ our $vacation_domain = 'autoreply.example.org';
 
 our $recipient_delimiter = '+';
 
+# smtp server used to send vacation e-mails, leave empty to look up the MX of the sending domain and deliver it directly (might break DKIM signatures, mail archiving etc.)
+our $smtp_server = 'localhost';
 # port to connect to; defaults to 25 for non-SSL, 465 for 'ssl', 587 for 'starttls'
 our $smtp_server_port = 25;
 
-# this is the helo we [the vacation script] use on connection; you may need to change this to your hostname or something,
-# depending upon what smtp helo restrictions you have in place within Postfix.
+# this is the local address from which to connect
 our $smtp_client = 'localhost';
 
+# this is the helo we [the vacation script] use on connection; you may need to change this to your hostname or something,
+# depending upon what smtp helo restrictions you have in place within Postfix.
+our $smtp_helo = 'localhost.localdomain';
+
 # send mail encrypted or plaintext
-# if 'starttls', use STARTTLS; if 'ssl' (or 1), connect securely; otherwise, no security
-our $smtp_ssl = 'starttls';
+# if 1, connect securely via ssl; otherwise, no security
+our $smtp_ssl = 0;
 
 # maximum time in secs to wait for server; default is 120
 our $smtp_timeout = '120';
@@ -73,7 +78,7 @@ our $smtp_authid = '';
 our $smtp_authpwd = '';
 
 # This specifies the mail 'from' name which is shown to recipients of vacation replies.
-# If you leave it empty, the vacation mail will contain: 
+# If you leave it empty, the vacation mail will contain:
 # From: <original@recipient.domain>
 # If you specify something here you'd instead see something like :
 # From: Some Friendly Name <original@recipient.domain>
@@ -104,7 +109,7 @@ our $interval = 0;
 # be answered when $custom_noreply_pattern is set to 1.
 # default = 0
 our $custom_noreply_pattern = 0;
-our $noreply_pattern = 'bounce|do-not-reply|facebook|linkedin|list-|myspace|twitter'; 
+our $noreply_pattern = 'bounce|do-not-reply|facebook|linkedin|list-|myspace|twitter';
 
 # Never send vacation mails for the following recipient email addresses.
 # Useful for e.g. aliases pointing to multiple recipients which have vacation active
@@ -113,7 +118,7 @@ our $noreply_pattern = 'bounce|do-not-reply|facebook|linkedin|list-|myspace|twit
 # default = ''
 # preventing vacation notifications for recipient info@example.org would look like this:
 # our $no_vacation_pattern = 'info\@example\.org';
-our $no_vacation_pattern = 'info\@example\.org'; 
+our $no_vacation_pattern = 'info\@example\.org';
 
 
 # instead of changing this script, you can put your settings to /etc/mail/postfixadmin/vacation.conf
@@ -159,7 +164,7 @@ if($test_mode == 1) {
     $appender->layout($log_layout);
     $logger->add_appender($appender);
     $logger->debug('Test mode enabled');
-    
+
 } else {
     $logger = get_logger();
     if($log_to_file == 1) {
@@ -208,7 +213,7 @@ if (!$dbh) {
 
 my $db_true; # MySQL and PgSQL use different values for TRUE, and unicode support...
 if ($db_type eq 'mysql') {
-    $dbh->do('SET CHARACTER SET utf8;');
+    $dbh->do('SET CHARACTER SET utf8mb4;');
     $db_true = '1';
 } else { # Pg
     $dbh->do("SET CLIENT_ENCODING TO 'UTF8'");
@@ -220,7 +225,7 @@ if ($db_type eq 'mysql') {
 my $loopcount=0;
 
 #
-# Get interval_time for email user from the vacation table 
+# Get interval_time for email user from the vacation table
 #
 sub get_interval {
     my ($to) = @_;
@@ -312,7 +317,7 @@ sub already_notified {
 }
 
 #
-# Check to see if there is a vacation record against a specific email address. 
+# Check to see if there is a vacation record against a specific email address.
 #
 sub check_for_vacation {
     my ($email_to_check) =@_;
@@ -438,9 +443,9 @@ sub send_vacation_email {
         }
 
         $logger->debug("Will send vacation response for $orig_messageid: FROM: $email (orig_to: $orig_to), TO: $orig_from; VACATION SUBJECT: $row[0] ; VACATION BODY: $row[1]");
-	
+
         my $subject = $row[0];
-	$subject = Encode::decode_utf8( $subject ) if( !Encode::is_utf8( $subject ) );
+        $subject = Encode::decode_utf8($subject) if (!Encode::is_utf8($subject));
         $orig_subject = decode("mime-header", $orig_subject);
         $subject =~ s/\$SUBJECT/$orig_subject/g;
         if ($subject ne $row[0]) {
@@ -448,22 +453,24 @@ sub send_vacation_email {
         }
 
         my $body = $row[1];
-	$body = Encode::decode_utf8( $body ) if( !Encode::is_utf8( $body ) );
+        $body = Encode::decode_utf8($body) if (!Encode::is_utf8($body));
+
         my $from = $email;
         my $to = $orig_from;
 
-        # part of the username in the email && part of the domain in the email
-        my ($email_username_part, $email_domain_part) = split(/@/, $email);
+        if ($smtp_server eq '') {
+            # part of the username in the email && part of the domain in the email
+            my (undef, $email_domain_part) = split(/@/, $email);
 
-        my $resolver  = Net::DNS::Resolver->new;
-        my @mx   = mx($resolver, $email_domain_part);
-        my $smtp_server; 
-        if (@mx) {
-            $smtp_server = @mx[0]->exchange;
-            $logger->debug("Found MX record <$smtp_server> for user <$email>!");
-        } else {
-            $logger->error("Unable to find MX record for user <$email>, error message: ".$resolver->errorstring);
-            exit(0); 
+            my $resolver = Net::DNS::Resolver->new;
+            my @mx = mx($resolver, $email_domain_part);
+            if (@mx) {
+                $smtp_server = @mx[0]->exchange;
+                $logger->debug("Found MX record <$smtp_server> for user <$email>!");
+            } else {
+                $logger->error("Unable to find MX record for user <$email>, error message: ".$resolver->errorstring);
+                exit(0);
+            }
         }
 
         my $smtp_params = {
@@ -475,6 +482,7 @@ sub send_vacation_email {
             ssl  => $smtp_ssl,
             timeout => $smtp_timeout,
             localaddr => $smtp_client,
+            helo => $smtp_helo,
             debug => 0,
         };
 
@@ -486,8 +494,8 @@ sub send_vacation_email {
 
         my $transport = Email::Sender::Transport::SMTP->new($smtp_params);
 
-	$subject = Encode::encode_utf8( $subject ) if( Encode::is_utf8( $subject ) );
-	$body = Encode::encode_utf8( $body ) if( Encode::is_utf8( $body ) );
+        $subject = Encode::encode_utf8($subject) if(Encode::is_utf8($subject));
+        $body = Encode::encode_utf8($body) if(Encode::is_utf8($body));
         $email = Email::Simple->create(
             header => [
                 To      => $to,
@@ -496,6 +504,7 @@ sub send_vacation_email {
                 Precedence => 'junk',
                 'Content-Type' => "text/plain; charset=utf-8",
                 'X-Loop' => 'Postfix Admin Virtual Vacation',
+                'Auto-Submitted' => 'auto-replied',
             ],
             body => $body,
         );
@@ -573,7 +582,7 @@ sub check_and_clean_from_address {
     my ($address) = @_;
     my $logger = get_logger();
 
-    if($address =~ /^(noreply|postmaster|mailer\-daemon|listserv|majordomo|owner\-|request\-|bounces\-)/i ||
+    if($address =~ /^(noreply|no\-reply|do_not_reply|no_reply|postmaster|mailer\-daemon|listserv|majordomo|owner\-|request\-|bounces\-)/i ||
         $address =~ /\-(owner|request|bounces)\@/i ||
         ($custom_noreply_pattern == 1 && $address =~ /^.*($noreply_pattern).*/i) ) {
             $logger->debug("sender $address contains $1 - will not send vacation message");
@@ -606,6 +615,7 @@ while (<STDIN>) {
     elsif (/^message\-id:\s*(.*)\s*\n$/i) { $messageid = $1; $lastheader = \$messageid; }
     elsif (/^x\-spam\-(flag|status):\s+yes/i) { $logger->debug("x-spam-$1: yes found; exiting"); exit (0); }
     elsif (/^x\-facebook\-notify:/i) { $logger->debug('Mail from facebook, ignoring'); exit(0); }
+    elsif (/^x\-amazon\-mail\-relay\-type:\s*notification/i) { $logger->debug('Notificatiom mail from Amazon, ignoring'); exit(0); }
     elsif (/^precedence:\s+(bulk|list|junk)/i) { $logger->debug("precedence: $1 found; exiting"); exit (0); }
     elsif (/^x\-loop:\s+postfix\ admin\ virtual\ vacation/i) { $logger->debug('x-loop: postfix admin virtual vacation found; exiting'); exit (0); }
     elsif (/^Auto\-Submitted:\s*no/i) { next; }
@@ -617,7 +627,7 @@ while (<STDIN>) {
     elsif (/^(x\-(avas\-spam|spamtest|crm114|razor|pyzor)\-status):\s+(spam)/i) { $logger->debug("$1: $3 found; exiting"); exit (0); }
     elsif (/^(x\-osbf\-lua\-score):\s+[0-9\/\.\-\+]+\s+\[([-S])\]/i) { $logger->debug("$1: $2 found; exiting"); exit (0); }
     elsif (/^x\-autogenerated:\s*reply/i) { $logger->debug('x-autogenerated found; exiting'); exit (0); }
-    elsif (/^x\-auto\-response\-suppress:\s*oof/i) { $logger->debug('x-auto-response-suppress: oof found; exiting'); exit (0); }
+    elsif (/^(x\-auto\-response\-suppress):\s*(oof|all)/i) { $logger->debug("$1: $2 found; exiting"); exit (0); }
     else {$lastheader = '' ; }
 }
 
@@ -641,9 +651,9 @@ if(!$from || !$to || !$messageid || !$smtp_sender || !$smtp_recipient) {
 }
 $logger->debug("Email headers have to: '$to' and From: '$from'");
 
-if ($to =~ /^.*($no_vacation_pattern).*/i) { 
+if ($to =~ /^.*($no_vacation_pattern).*/i) {
    $logger->debug("Will not send vacation reply for messages to $to");
-   exit(0); 
+   exit(0);
 }
 
 $to = strip_address($to);

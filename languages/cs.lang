@@ -134,6 +134,7 @@ $PALANG['alias_updated'] = 'Přesměrování %s bylo upraveno!';
 $PALANG['pCreate_alias_catchall_text'] = 'Pro vytvoření doménového koše použijte * jako alias. Pro přesměrování doména -> doména použijte *@domain.tld jako cíl.';
 $PALANG['mailbox_alias_cant_be_deleted'] = 'Toto přesměrování je svázáno s emailem a nemůže být proto vymazáno!';
 $PALANG['protected_alias_cant_be_deleted'] = 'Tento alias %s je chráněný a může být odstraněn pouze superadministrátorem';
+$PALANG['alias_points_to_itself'] = 'Alias may not point to itself'; # XXX
 
 $PALANG['pEdit_alias_welcome'] = 'Upravit nastavení přesměrování.';
 $PALANG['pEdit_alias_help'] = 'Je možné zadat více cílových adres, jeden záznam na řádek.';
@@ -208,6 +209,7 @@ $PALANG['reply_once_per_day'] = 'Odpovědět jednou za den';
 $PALANG['reply_once_per_week'] = 'Odpovědět jednou za týden';
 
 $PALANG['pViewlog_welcome'] = 'Prohlížet %s posledních akcí pro ';
+$PALANG['pViewlog_welcome_all'] = 'Prohlížet %s posledních akcí ';
 $PALANG['pViewlog_timestamp'] = 'Časová značka';
 $PALANG['pViewlog_action'] = 'Akce';
 $PALANG['pViewlog_data'] = 'Poznámka';
@@ -278,10 +280,12 @@ $PALANG['domain_updated'] = 'Doména %s byla aktualizována.';
 $PALANG['pAdminDelete_admin_error'] = 'Nepodařilo se odstranit admin uživatele!';
 
 $PALANG['domain_postdel_failed'] = 'Spuštění skriptu po smazání domény selhalo, zkontrolujte log soubor!';
+$PALANG['domain_postedit_failed'] = 'The domain postedit script failed, check the error log for details!'; # XXX
 $PALANG['domain_postcreate_failed'] = 'Spuštění skriptu po vytvoření domény selhalo, zkontrolujte log soubor!';
 $PALANG['mailbox_postdel_failed'] = 'Spuštění skriptu po smazání schránky selhalo, zkontrolujte log soubor!';
 $PALANG['mailbox_postedit_failed'] = 'Spuštení skriptu po úpravě schránky selhalo, zkontrolujte log soubor!';
 $PALANG['mailbox_postcreate_failed'] = 'Spuštení skriptu po vytvoření schránky selhalo, zkontrolujte log soubor!';
+$PALANG['mailbox_postpassword_failed'] = 'The mailbox postpassword script failed, check the error log for details!'; # XXX
 $PALANG['pAdminDelete_alias_domain_error'] = 'Nepodařilo se odstranit přesměrování domény!';
 $PALANG['domain_conflict_vacation_domain'] = 'Doménu využitou pro zprávy o nepřítomnosti nelze použít jako mailovou doménu!';
 

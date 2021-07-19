@@ -1,7 +1,9 @@
 <?php
 
-class ValidatePasswordTest extends \PHPUnit\Framework\TestCase {
-    public function testBasic() {
+class ValidatePasswordTest extends \PHPUnit\Framework\TestCase
+{
+    public function testBasic()
+    {
         $config = Config::getInstance();
 
         // Set to the defaults, just to make sure.

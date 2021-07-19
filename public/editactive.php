@@ -25,9 +25,13 @@ if (safeget('token') != $_SESSION['PFA_token']) {
 
 $username = authentication_get_username(); # enforce login
 
-$id     = safeget('id');
-$table  = safeget('table');
+$id = safeget('id');
+$table = safeget('table');
 $active = safeget('active');
+
+if (empty($table)) {
+    die("Invalid table name given");
+}
 
 $handlerclass = ucfirst($table) . 'Handler';
 
@@ -47,7 +51,7 @@ if ($handler->init($id)) { # errors will be displayed as last step anyway, no ne
     }
 
     if ($handler->set(array('active' => $active))) {
-        $handler->store();
+        $handler->save();
     }
 }
 

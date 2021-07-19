@@ -31,6 +31,9 @@ $admin_username = authentication_get_username();
 
 $list_domains = list_domains_for_admin($admin_username);
 
+$CONF = Config::getInstance()->getAll();
+$smarty = PFASmarty::getInstance();
+
 $page_size = $CONF['page_size'];
 
 $fDomain = safepost('fDomain', safeget('domain', safesession('list-virtual:domain')));
@@ -38,9 +41,12 @@ if (safesession('list-virtual:domain') != $fDomain) {
     unset($_SESSION['list-virtual:limit']);
 }
 $fDisplay = (int) safepost('limit', safeget('limit', safesession('list-virtual:limit')));
-$search   = safepost('search', safeget('search', array())); # not remembered in the session
-if (!is_array($search)) {
-    die(Config::Lang('invalid_parameter'));
+$search   = [];
+
+if (isset($_POST['search']) && is_array($_POST['search'])) {
+    $search = $_POST['search'];
+} elseif (isset($_GET['search']) && is_array($_GET['search'])) {
+    $search = $_GET['search'];
 }
 
 if (count($list_domains) == 0) {
@@ -318,29 +324,32 @@ if (isset($limit)) {
 }
 
 $gen_show_status_mailbox = array();
-$divide_quota = array('current' => array(), 'quota' => array());
+$divide_quota = array('current' => [], 'quota' => [], 'percent' => [], 'quota_width' => []);
 
 for ($i = 0; $i < sizeof($tMailbox); $i++) {
-    $gen_show_status_mailbox [$i] = gen_show_status($tMailbox[$i]['username']);
+    $gen_show_status_mailbox[$i] = gen_show_status($tMailbox[$i]['username']);
+
+    $divide_quota['current'][$i] = Config::Lang('unknown');
+    $divide_quota['quota_width'][$i] = 0;
+    $divide_quota['percent'][$i] = null;
+    $divide_quota['quota'][$i] = Config::Lang('unknown');
 
     if (isset($tMailbox[$i]['current'])) {
-        $divide_quota ['current'][$i] = divide_quota($tMailbox[$i]['current']);
+        $divide_quota['current'][$i] = divide_quota($tMailbox[$i]['current']);
     }
     if (isset($tMailbox[$i]['quota'])) {
-        $divide_quota ['quota'][$i] = divide_quota($tMailbox[$i]['quota']);
+        $divide_quota['quota'][$i] = divide_quota($tMailbox[$i]['quota']);
     }
     if (isset($tMailbox[$i]['quota']) && isset($tMailbox[$i]['current'])) {
-        $divide_quota ['percent'][$i] = min(100, round(($divide_quota ['current'][$i]/max(1, $divide_quota ['quota'][$i]))*100));
-        $divide_quota ['quota_width'][$i] = ($divide_quota ['percent'][$i] / 100 * 120);
-    } else {
-        $divide_quota ['current'][$i] = Config::Lang('unknown');
-        $divide_quota ['quota_width'][$i] = 0; # TODO: use special value?
+        $divide_quota['percent'][$i] = min(100, round(($divide_quota ['current'][$i]/max(1, $divide_quota ['quota'][$i]))*100));
+        $divide_quota['quota_width'][$i] = ($divide_quota['percent'][$i] / 100 ) * 120; // because 100px wasn't wide enough?
     }
 }
 
 
 
-class cNav_bar {
+class cNav_bar
+{
     protected $count;
     protected $title;
     protected $limit;
@@ -357,7 +366,8 @@ class cNav_bar {
     protected $arr_top; //* internal
     protected $anchor;
 
-    public function __construct($aTitle, $aLimit, $aPage_size, $aPages, $aSearch) {
+    public function __construct($aTitle, $aLimit, $aPage_size, $aPages, $aSearch)
+    {
         $this->count = count($aPages);
         $this->title = $aTitle;
         $this->limit = $aLimit;
@@ -370,7 +380,8 @@ class cNav_bar {
         }
     }
 
-    private function init() {
+    private function init()
+    {
         $this->anchor = 'a'.substr($this->title, 3);
         $this->append_to_url .= '#'.$this->anchor;
         ($this->limit >= $this->page_size) ? $this->arr_prev = '&nbsp;<a href="?limit='.($this->limit - $this->page_size).$this->search.$this->append_to_url.'"><img border="0" src="images/arrow-l.png" title="'.$GLOBALS ['PALANG']['pOverview_left_arrow'].'" alt="'.$GLOBALS ['PALANG']['pOverview_left_arrow'].'"/></a>&nbsp;' : $this->arr_prev = '';
@@ -379,7 +390,8 @@ class cNav_bar {
         $this->have_run_init = true;
     }
 
-    private function display_pre() {
+    private function display_pre()
+    {
         $ret_val = '<div class="nav_bar"';
         //$ret_val .= ' style="background-color:#ffa;"';
         $ret_val .= '>';
@@ -388,12 +400,14 @@ class cNav_bar {
         return $ret_val;
     }
 
-    private function display_post() {
+    private function display_post()
+    {
         $ret_val = '</td></tr></table></div>';
         return $ret_val;
     }
 
-    public function display_top() {
+    public function display_top()
+    {
         $ret_val = '';
         if ($this->count < 1) {
             return $ret_val;
@@ -401,11 +415,11 @@ class cNav_bar {
         if (!$this->have_run_init) {
             $this->init();
         }
-            
+
         $ret_val .= '<a name="'.$this->anchor.'"></a>';
         $ret_val .= $this->display_pre();
         $ret_val .= '<b>'.$this->title.'</b>&nbsp;&nbsp;';
-        
+
         $highlight_at = 0;
 
         if ($this->limit >= $this->page_size) {
@@ -430,7 +444,8 @@ class cNav_bar {
         return $ret_val;
     }
 
-    public function display_bottom() {
+    public function display_bottom()
+    {
         $ret_val = '';
         if ($this->count < 1) {
             return $ret_val;
@@ -509,7 +524,8 @@ $smarty->assign('tab', $_SESSION ['tab']);
 $smarty->assign('smarty_template', 'list-virtual');
 $smarty->display('index.tpl');
 
-function eval_size($aSize) {
+function eval_size($aSize)
+{
     if ($aSize == 0) {
         $ret_val = Config::Lang('pOverview_unlimited');
     } elseif ($aSize < 0) {

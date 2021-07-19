@@ -1,7 +1,9 @@
 <?php
 
-class PaCryptTest extends \PHPUnit\Framework\TestCase {
-    public function testMd5Crypt() {
+class PaCryptTest extends \PHPUnit\Framework\TestCase
+{
+    public function testMd5Crypt()
+    {
         $hash = _pacrypt_md5crypt('test', '');
 
         $this->assertNotEmpty($hash);
@@ -10,8 +12,8 @@ class PaCryptTest extends \PHPUnit\Framework\TestCase {
         $this->assertEquals($hash, _pacrypt_md5crypt('test', $hash));
     }
 
-    public function testCrypt() {
-
+    public function testCrypt()
+    {
         // E_NOTICE if we pass in '' for the salt
         $hash = _pacrypt_crypt('test', 'sa');
 
@@ -21,16 +23,15 @@ class PaCryptTest extends \PHPUnit\Framework\TestCase {
         $this->assertEquals($hash, _pacrypt_crypt('test', $hash));
     }
 
-    public function testMySQLEncrypt() {
+    public function testMySQLEncrypt()
+    {
         if (!db_mysql()) {
             $this->markTestSkipped('Not using MySQL');
         }
 
-        $hash = _pacrypt_mysql_encrypt('test');
+        $hash = _pacrypt_mysql_encrypt('test1');
 
-        sleep(1);
-
-        $hash2 = _pacrypt_mysql_encrypt('test');
+        $hash2 = _pacrypt_mysql_encrypt('test2');
 
         $this->assertNotEquals($hash, $hash2);
 
@@ -38,14 +39,11 @@ class PaCryptTest extends \PHPUnit\Framework\TestCase {
         $this->assertNotEquals('test', $hash);
         $this->assertNotEquals('test', $hash2);
 
-        $this->assertEquals(
-            $hash,
-            _pacrypt_mysql_encrypt('test', $hash),
-            "test should encrypt to : $hash ..."
-        );
+        $this->assertTrue( hash_equals($hash, _pacrypt_mysql_encrypt('test1', $hash) ), "hashes should equal....");
     }
 
-    public function testAuthlib() {
+    public function testAuthlib()
+    {
         global $CONF;
 
         // too many options!
@@ -55,7 +53,8 @@ class PaCryptTest extends \PHPUnit\Framework\TestCase {
                 'md5' => 'CY9rzUYh03PK3k6DJie09g==',
                 // crypt requires salt ...
                 'SHA' => 'qUqP5cyxm6YcTAhz05Hph5gvu9M='
-            ] as $flavour => $hash) {
+            ] as $flavour => $hash
+        ) {
             $CONF['authlib_default_flavour'] = $flavour;
 
             $stored = "{" . $flavour . "}$hash";
@@ -66,7 +65,8 @@ class PaCryptTest extends \PHPUnit\Framework\TestCase {
         }
     }
 
-    public function testPacryptDovecot() {
+    public function testPacryptDovecot()
+    {
         global $CONF;
         if (!file_exists('/usr/bin/doveadm')) {
             $this->markTestSkipped("No /usr/bin/doveadm");
@@ -80,11 +80,17 @@ class PaCryptTest extends \PHPUnit\Framework\TestCase {
         $this->assertEquals($expected_hash, _pacrypt_dovecot('test', ''));
 
         $this->assertEquals($expected_hash, _pacrypt_dovecot('test', $expected_hash));
+
+        // This should also work.
+        $sha512 = '{SHA512}ClAmHr0aOQ/tK/Mm8mc8FFWCpjQtUjIElz0CGTN/gWFqgGmwElh89WNfaSXxtWw2AjDBmyc1AO4BPgMGAb8kJQ=='; // foobar
+        $this->assertEquals($sha512, _pacrypt_dovecot('foobar', $sha512));
+
+        $sha512 = '{SHA512}ClAmHr0aOQ/tK/Mm8mc8FFWCpjQtUjIElz0CGTN/gWFqgGmwElh89WNfaSXxtWw2AjDBmyc1AO4BPgMGAb8kJQ=='; // foobar
+        $this->assertNotEquals($sha512, _pacrypt_dovecot('foobarbaz', $sha512));
     }
 
-    public function testPhpCrypt() {
-        global $CONF;
-
+    public function testPhpCrypt()
+    {
         $config = Config::getInstance();
         Config::write('encrypt', 'php_crypt:MD5');
 
@@ -98,12 +104,44 @@ class PaCryptTest extends \PHPUnit\Framework\TestCase {
         $this->assertEquals($enc, $expected);
 
         $fail = _pacrypt_php_crypt('bar', $expected);
-
-
-        $this->assertNotEquals($fail, $expected);
     }
 
-    public function testPhpCryptRandomString() {
+    public function testPhpCryptHandlesPrefixAndOrRounds()
+    {
+        // try with 1000 rounds
+        Config::write('encrypt', 'php_crypt:SHA256:1000');
+        $password = 'hello';
+
+        $randomHash = '$5$VhqhhsXJtPFeBX9e$kz3/CMIEu80bKdtDAcISIrDfdwtc.ilR68Vb3hNhu/7';
+        $randomHashWithPrefix = '{SHA256-CRYPT}' . $randomHash;
+
+        $new = _pacrypt_php_crypt($password, '');
+
+        $this->assertNotEquals($randomHash, $new); // salts should be different.
+
+        $enc = _pacrypt_php_crypt($password, $randomHash);
+        $this->assertEquals($enc, $randomHash);
+
+        $this->assertEquals($randomHash, _pacrypt_php_crypt("hello", $randomHash));
+        $this->assertEquals($randomHash, _pacrypt_crypt("hello", $randomHash));
+
+        Config::write('encrypt', 'php_crypt:SHA256::{SHA256-CRYPT}');
+
+        $enc = _pacrypt_php_crypt("hello", $randomHash);
+        $this->assertEquals($randomHash, $enc); // we passed in something lacking the prefix, so we shouldn't have added it in.
+        $this->assertTrue(hash_equals($randomHash, $enc));
+
+        // should cope with this :
+        $enc = _pacrypt_php_crypt($password, '');
+
+        $this->assertEquals($enc, _pacrypt_php_crypt($password, $enc));
+
+        $this->assertRegExp('/^\{SHA256-CRYPT\}/', $enc);
+        $this->assertGreaterThan(20, strlen($enc));
+    }
+
+    public function testPhpCryptRandomString()
+    {
         $str1 = _php_crypt_random_string('abcdefg123456789', 2);
         $str2 = _php_crypt_random_string('abcdefg123456789', 2);
         $str3 = _php_crypt_random_string('abcdefg123456789', 2);
@@ -114,10 +152,11 @@ class PaCryptTest extends \PHPUnit\Framework\TestCase {
 
         // it should be difficult for us to get three salts of the same value back...
         // not impossible though.
-        $this->assertFalse( strcmp($str1, $str2) == 0 && strcmp($str1, $str3) == 0 );
+        $this->assertFalse(strcmp($str1, $str2) == 0 && strcmp($str1, $str3) == 0);
     }
 
-    public function testSha512B64() {
+    public function testSha512B64()
+    {
         $str1 = _pacrypt_sha512_b64('test', '');
         $str2 = _pacrypt_sha512_b64('test', '');
 
@@ -138,6 +177,6 @@ class PaCryptTest extends \PHPUnit\Framework\TestCase {
 
         $this->assertFalse(hash_equals('test', $str3));
 
-        $this->assertTrue(hash_equals(_pacrypt_sha512_b64('foo',$str3), $str3));
+        $this->assertTrue(hash_equals(_pacrypt_sha512_b64('foo', $str3), $str3));
     }
 }
